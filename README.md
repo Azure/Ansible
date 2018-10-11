@@ -1,5 +1,23 @@
+# Ansible Solution Template
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://ms.portal.azure.com/#create/visualstudiochina.ansible)
 
-# Contributing
+This repository contains scripts to deploy [Ansible](https://www.ansible.com/) on Linux (Ubuntu 16.04 LTS) Virtual Machine on Azure, with Azure credential pre-configured for you per configuration.
+
+
+## Customization
+- Ansible Version  
+  Pick up Ansible version to be installed. Available options: latest, 2.7.0, 2.6.5, 2.5.10.
+
+- Azure Credential  
+  Set Azure credentials from:
+  - Not set.
+  - Mannually setting service principal id and secret.
+  - Enabling [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) on this VM. In this case, you will need to grant appriopriate role assignment to VM's system assigned identity, via az cli, portal or arm template, please refer to [this article](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal) for more detail.
+
+
+
+
+## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us

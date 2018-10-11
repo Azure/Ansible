@@ -1,0 +1,433 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "artifactsLocation": {
+      "metadata": {
+        "artifactsBaseUrl": "",
+        "description": "Artifacts location"
+      },
+      "defaultValue": "https://raw.githubusercontent.com/Azure/Ansible/master/",
+      "type": "string"
+    },
+    "artifactsLocationSasToken": {
+      "metadata": {
+        "description": "Artifacts Sas token"
+      },
+      "defaultValue": "",
+      "type": "string"
+    },
+    "adminPassword": {
+      "metadata": {
+        "description": "Password for the Virtual Machine. Will be used only if authenticationType is 'password'"
+      },
+      "defaultValue": "",
+      "type": "securestring"
+    },
+    "adminSSHPublicKey": {
+      "metadata": {
+        "description": "Public SSH key for the Virtual Machine. Will be used only if authenticationType is 'sshPublicKey'"
+      },
+      "defaultValue": "",
+      "type": "string"
+    },
+    "adminUserName": {
+      "metadata": {
+        "description": "User name for the Virtual Machine"
+      },
+      "type": "string"
+    },
+    "authenticationType": {
+      "metadata": {
+        "description": "Authentication type (can be 'password' or 'sshPublicKey')"
+      },
+      "type": "string"
+    },
+    "location": {
+      "metadata": {
+        "description": "Azure location where to deploy the resources"
+      },
+      "type": "string",
+      "defaultValue": "resourceGroup().location"
+    },
+    "publicIPName": {
+      "metadata": {
+        "description": "Public IP name"
+      },
+      "type": "string",
+      "defaultValue": "resourceGroup().name"
+    },
+    "publicIPNewOrExisting": {
+      "metadata": {
+        "description": "Should be 'new' if the public IP has to be created"
+      },
+      "type": "string",
+      "defaultValue": "new"
+    },
+    "publicIPResourceGroup": {
+      "metadata": {
+        "description": "The Public IP Resource Group"
+      },
+      "type": "string",
+      "defaultValue": "resourceGroup().name"
+    },
+    "storageAccountType": {
+      "defaultValue": "Standard_LRS",
+      "metadata": {
+        "description": "Storage Account Type"
+      },
+      "type": "string"
+    },
+    "spId": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The Service Principal Id"
+      },
+      "type": "string"
+    },
+    "spSecret": {
+      "defaultValue": "",
+      "metadata": {
+        "description": "The Service Principal secret"
+      },
+      "type": "string"
+    },
+    "spType": {
+      "defaultValue": "msi",
+      "metadata": {
+        "description": "The type of service principal injected into Ansible (can be 'msi' or 'manual')."
+      },
+      "type": "string"
+    },
+    "vmName": {
+      "metadata": {
+        "description": "Virtual Machine Name (also used as a prefix for other resources)"
+      },
+      "type": "string",
+      "defaultValue": "ansibleHost"
+    },
+    "vmSize": {
+      "metadata": {
+        "description": "Virtual Machine Size"
+      },
+      "type": "string",
+      "defaultValue": "Standard_DS1_v2"
+    },
+    "vnetNewOrExisting": {
+      "metadata": {
+        "description": "Use new or existing VNET"
+      },
+      "type": "string",
+      "defaultValue": "new"
+    },
+    "vnetResourceGroup": {
+      "metadata": {
+        "description": "Name of resource group of the VNET"
+      },
+      "type": "string",
+      "defaultValue": "resourceGroup().name"
+    },
+    "vnetName": {
+      "metadata": {
+        "description": "Name of the Virtual Network (VNET)"
+      },
+      "type": "string",
+      "defaultValue": "ansible-vnet"
+    },
+    "vnetAddressPrefix": {
+      "metadata": {
+        "description": "Virtual network address CIDR"
+      },
+      "type": "string",
+      "defaultValue": "172.16.0.0/16"
+    },
+    "subnetName": {
+      "metadata": {
+        "description": "Name of the subnet"
+      },
+      "type": "string",
+      "defaultValue": "ansible-subnet"
+    },
+    "subnetAddressPrefix": {
+      "metadata": {
+        "description": "subnet CIDR"
+      },
+      "type": "string",
+      "defaultValue": "172.16.0.0/24"
+    },
+    "ansibleVersion": {
+      "metadata": {
+        "description": "Ansible version"
+      },
+      "type": "string",
+      "defaultValue": "2.7.0"
+    }
+  },
+  "variables": {
+    "_extensionScript": "install_ansible.sh",
+    "nsgName": "[concat(parameters('vmName'), '-nsg')]",
+    "nicName": "[concat(parameters('vmName'), '-nic-', if(equals(indexOf(parameters('publicIPNewOrExisting'), 'none'), -1), 'one', 'none'), '-pip')]",
+    "templateUrlIP": "[concat(parameters('artifactsLocation'),'/publicIP-',parameters('publicIPNewOrExisting'),'.json',parameters('artifactsLocationSasToken'))]",
+    "templateUrlVnet": "[concat(parameters('artifactsLocation'),'/vnet-',parameters('vnetNewOrExisting'),'.json',parameters('artifactsLocationSasToken'))]",
+    "templateUrlVM": "[concat(parameters('artifactsLocation'),'/VM-',parameters('authenticationType'),'.json',parameters('artifactsLocationSasToken'))]",
+    "ubuntuSku": "16.04-LTS",
+    "publicIPDeploymentName": "[concat(parameters('vmName'), '-pip-deploy')]",
+    "vmDeploymentName": "[concat(parameters('vmName'), '-vm-deploy')]",
+    "vnetDeploymentName": "[concat(parameters('vmName'), '-vnet-deploy')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "condition": "[equals(indexOf(parameters('publicIPNewOrExisting'), 'none'), -1)]",
+      "name": "[variables('publicIPDeploymentName')]",
+      "properties": {
+        "mode": "Incremental",
+        "parameters": {
+          "publicIPName": {
+            "value": "[parameters('publicIPName')]"
+          },
+          "publicIPLocation": {
+            "value": "[parameters('location')]"
+          },
+          "publicIPResourceGroup": {
+            "value": "[parameters('publicIPResourceGroup')]"
+          }
+        },
+        "templateLink": {
+          "contentVersion": "1.0.0.0",
+          "uri": "[variables('templateUrlIP')]"
+        }
+      },
+      "type": "Microsoft.Resources/deployments"
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "dependsOn": [],
+      "name": "[variables('vnetDeploymentName')]",
+      "properties": {
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "vnetName": {
+            "value": "[parameters('vnetName')]"
+          },
+          "vnetAddressPrefix": {
+            "value": "[parameters('vnetAddressPrefix')]"
+          },
+          "subnetName": {
+            "value": "[parameters('subnetName')]"
+          },
+          "subnetAddressPrefix": {
+            "value": "[parameters('subnetAddressPrefix')]"
+          }
+        },
+        "templateLink": {
+          "contentVersion": "1.0.0.0",
+          "uri": "[variables('templateUrlVnet')]"
+        }
+      },
+      "type": "Microsoft.Resources/deployments"
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "location": "[parameters('location')]",
+      "name": "[variables('nsgName')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "ssh-rule",
+            "properties": {
+              "access": "Allow",
+              "description": "Allow SSH",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "22",
+              "direction": "Inbound",
+              "priority": 100,
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "Internet",
+              "sourcePortRange": "*"
+            }
+          }
+        ]
+      },
+      "tags": {
+        "displayName": "Network Security Group"
+      },
+      "type": "Microsoft.Network/networkSecurityGroups"
+    },
+    {
+      "apiVersion": "2016-03-30",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
+        "[resourceId('Microsoft.Resources/deployments', variables('vnetDeploymentName'))]"
+      ],
+      "location": "[parameters('location')]",
+      "name": "[concat(parameters('vmName'), '-nic-none-pip')]",
+      "condition": "[equals(parameters('publicIPNewOrExisting'), 'none')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[concat(resourceId(parameters('vnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('vnetName')),'/subnets/',parameters('subnetName'))]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+        }
+      },
+      "tags": {
+        "displayName": "[concat(parameters('vmName'), '-nic-none-pip')]"
+      },
+      "type": "Microsoft.Network/networkInterfaces"
+    },
+    {
+      "apiVersion": "2016-03-30",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
+        "[resourceId('Microsoft.Resources/deployments', variables('vnetDeploymentName'))]",
+        "[resourceId('Microsoft.Resources/deployments', variables('publicIPDeploymentName'))]"
+      ],
+      "location": "[parameters('location')]",
+      "name": "[concat(parameters('vmName'), '-nic-one-pip')]",
+      "condition": "[equals(indexOf(parameters('publicIPNewOrExisting'), 'none'), -1)]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses', parameters('publicIPName'))]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId(parameters('vnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('vnetName')),'/subnets/',parameters('subnetName'))]"
+              }
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+        }
+      },
+      "tags": {
+        "displayName": "[concat(parameters('vmName'), '-nic-one-pip')]"
+      },
+      "type": "Microsoft.Network/networkInterfaces"
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+      ],
+      "name": "[variables('vmDeploymentName')]",
+      "properties": {
+        "mode": "Incremental",
+        "parameters": {
+          "adminPassword": {
+            "value": "[parameters('adminPassword')]"
+          },
+          "adminSSHPublicKey": {
+            "value": "[parameters('adminSSHPublicKey')]"
+          },
+          "adminUserName": {
+            "value": "[parameters('adminUserName')]"
+          },
+          "networkInterfaceId": {
+            "value": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+          },
+          "storageAccountType": {
+            "value": "[parameters('storageAccountType')]"
+          },
+          "ubuntuSku": {
+            "value": "[variables('ubuntuSku')]"
+          },
+          "vmLocation": {
+            "value": "[parameters('location')]"
+          },
+          "vmName": {
+            "value": "[parameters('vmName')]"
+          },
+          "vmSize": {
+            "value": "[parameters('vmSize')]"
+          }
+        },
+        "templateLink": {
+          "contentVersion": "1.0.0.0",
+          "uri": "[variables('templateUrlVM')]"
+        }
+      },
+      "type": "Microsoft.Resources/deployments"
+    },
+    {
+      "name": "[guid(resourceGroup().id, deployment().name)]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2017-05-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', variables('vmDeploymentName'))]"
+      ],
+      "condition": "[equals(parameters('spType'), 'msi')]",
+      "properties": {
+        "roleDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "principalId": "[reference(variables('vmDeploymentName')).outputs.identity.value.principalId]",
+        "scope": "[resourceGroup().id]"
+     }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(parameters('vmName'), '/ManagedIdentityExtensionForLinux')]",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', variables('vmDeploymentName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.ManagedIdentity",
+        "type": "ManagedIdentityExtensionForLinux",
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {}
+      }
+    },
+    {
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', variables('vmDeploymentName'))]"
+      ],
+      "location": "[parameters('location')]",
+      "name": "[concat(parameters('vmName'), '/Init')]",
+      "properties": {
+        "autoUpgradeMinorVersion": true,
+        "protectedSettings": {
+          "commandToExecute": "[concat('./', variables('_extensionScript'), ' -v \"', parameters('ansibleVersion'), '\" -sp \"', parameters('spType'), '\" -spid \"', parameters('spId'), '\" -ss \"', parameters('spSecret'), '\" -subid \"', subscription().subscriptionId, '\" -tid \"', subscription().tenantId, '\"' )]"
+        },
+        "publisher": "Microsoft.Azure.Extensions",
+        "settings": {
+          "fileUris": [
+            "[concat(parameters('artifactsLocation'), '/scripts/', variables('_extensionScript'), parameters('artifactsLocationSasToken'))]"
+          ]
+        },
+        "type": "CustomScript",
+        "typeHandlerVersion": "2.0"
+      },
+      "type": "Microsoft.Compute/virtualMachines/extensions"
+    }
+  ],
+  "outputs": {
+    "ansibleHostIP": {
+      "type": "string",
+      "value": "[if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2016-03-30').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').ipAddress)]"
+    },
+    "ssh": {
+      "type": "string",
+      "value": "[concat('ssh ', parameters('adminUsername'), '@', if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2016-03-30').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').ipAddress))]"
+    }
+  }
+}

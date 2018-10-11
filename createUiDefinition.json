@@ -1,0 +1,279 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Compute.MultiVm",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "vmName",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Name",
+        "defaultValue": "ansiblehost",
+        "toolTip": "",
+        "constraints": {
+          "required": true,
+          "regex": "^[a-z0-9A-Z]{1,54}$",
+          "validationMessage": "Only alphanumeric characters are allowed, and the value must be 1-54 characters long."
+        },
+        "visible": true
+      },
+      {
+        "name": "userName",
+        "type": "Microsoft.Compute.UserNameTextBox",
+        "label": "User name",
+        "defaultValue": "",
+        "toolTip": "",
+        "constraints": {
+          "required": true
+        },
+        "osPlatform": "Linux",
+        "visible": true
+      },
+      {
+        "name": "authType",
+        "type": "Microsoft.Compute.CredentialsCombo",
+        "label": {
+          "authenticationType": "Authentication type",
+          "password": "Password",
+          "confirmPassword": "Confirm password",
+          "sshPublicKey": "SSH public key"
+        },
+        "toolTip": {
+          "authenticationType": "",
+          "password": "",
+          "sshPublicKey": ""
+        },
+        "constraints": {
+          "required": true,
+          "customPasswordRegex": "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d@#\\$%\\^&\\*-_!+=\\[\\]\\{\\}\\|\\\\:',\\.\\?\\/`~\"\\(\\);]{8,}$",
+          "customValidationMessage": "The password must contain at least 8 characters, with at least 1 letter and 1 number. Alphanumerical (@#$%^&*-_!+=[]{}|\\:',.?/`~\"();)and special characters are allowed"
+        },
+        "options": {
+          "hideConfirmation": false,
+          "hidePassword": false
+        },
+        "osPlatform": "Linux",
+        "visible": true
+      }
+    ],
+    "steps": [
+      {
+        "name": "firstStep",
+        "label": "Additional Settings",
+        "bladeTitle": "Additional Settings",
+        "subLabel": {
+          "preValidation": "",
+          "postValidation": "Done"
+        },
+        "elements": [
+          {
+            "name": "vmSize",
+            "type": "Microsoft.Compute.SizeSelector",
+            "label": "Size",
+            "toolTip": "",
+            "recommendedSizes": [
+              "Standard_DS2_v2",
+              "Standard_DS1_v2",
+              "Standard_DS11_v2"
+            ],
+            "osPlatform": "Linux",
+            "count": 1,
+            "visible": true
+          },
+          {
+            "name": "vmDiskType",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "VM disk type",
+            "defaultValue": "SSD",
+            "toolTip": "Premium disks (SSD) are backed by solid state drives and offer consistent, low-latency performance. They provide the best balance between price and performance, and are ideal for I/O-intensive applications and production workloads. Standard disks (HDD) are backed by magnetic drives and are preferable for applications where data is accessed infrequently.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "SSD",
+                  "value": "Premium_LRS"
+                },
+                {
+                  "label": "HDD",
+                  "value": "Standard_LRS"
+                }
+              ]
+            },
+            "visible": true
+          },
+          {
+            "name": "vnet",
+            "type": "Microsoft.Network.VirtualNetworkCombo",
+            "label": {
+              "virtualNetwork": "Virtual network",
+              "subnets": "Subnets"
+            },
+            "toolTip": {
+              "virtualNetwork": "",
+              "subnets": ""
+            },
+            "defaultValue": {
+              "name": "ansible-vnet",
+              "addressPrefixSize": "/16"
+            },
+            "constraints": {
+              "minAddressPrefixSize": "/24"
+            },
+            "subnets": {
+              "subnet1": {
+                "label": "Subset",
+                "defaultValue": {
+                  "name": "ansible-subnet",
+                  "addressPrefixSize": "/24"
+                },
+                "constraints": {
+                  "minAddressPrefixSize": "/30",
+                  "minAddressCount": 1,
+                  "requireContiguousAddresses": true
+                }
+              }
+            }
+          },
+          {
+            "name": "publicIP",
+            "type": "Microsoft.Network.PublicIpAddressCombo",
+            "label": {
+              "publicIpAddress": "Public IP Address",
+              "domainNameLabel": ""
+            },
+            "defaultValue": {
+              "publicIpAddressName": "ansible-pip"
+            },
+            "constraints": {
+            },
+            "options": {
+              "hideExisting": false,
+              "hideDomainNameLabel": true,
+              "hideNone": false
+            },
+            "visible": true
+          },
+          {
+            "name": "ansibleVersion",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Ansible version",
+            "defaultValue": "latest",
+            "toolTip": "",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "latest",
+                  "value": "latest"
+                },
+                {
+                  "label": "2.7.0",
+                  "value": "2.7.0"
+                },
+                {
+                  "label": "2.6.5",
+                  "value": "2.6.5"
+                },
+                {
+                  "label": "2.5.10",
+                  "value": "2.5.10"
+                }
+              ]
+            },
+            "visible": true
+          }
+        ]
+      },
+      {
+        "name": "secondStep",
+        "label": "Integration Settings",
+        "bladeTitle": "Ansible Integration Settings",
+        "subLabel": {
+          "preValidation": "",
+          "postValidation": "Done"
+        },
+        "elements": [
+          {
+            "name": "sptype",
+            "type": "Microsoft.Common.DropDown",
+            "label": "Service Principal Integration",
+            "defaultValue": "Auto(MSI)",
+            "toolTip": "The service principal will be added into Ansible as a credential for authenticating with Azure. 'Auto' means that the principal will be created by MSI (Managed Service Identity). 'Manual' means the principal should be created by user and be filled in below.",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "Auto(MSI)",
+                  "value": "msi"
+                },
+                {
+                  "label": "Manual",
+                  "value": "manual"
+                },
+                {
+                  "label": "Off",
+                  "value": "off"
+                }
+              ]
+            },
+            "visible": true
+          },
+          {
+            "name": "spSection",
+            "type": "Microsoft.Common.Section",
+            "label": "Service Principal",
+            "elements": [
+              {
+                "name": "spid",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Application ID",
+                "defaultValue": "",
+                "toolTip": "",
+                "constraints": {
+                  "required": true,
+                  "regex": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
+                  "validationMessage": "Must be a valid UUID."
+                },
+                "visible": true
+              },
+              {
+                "name": "spsecret",
+                "type": "Microsoft.Common.PasswordBox",
+                "label": {
+                  "password": "Secret",
+                  "confirmPassword": ""
+                },
+                "toolTip": "",
+                "options": {
+                  "hideConfirmation": true
+                },
+                "visible": true
+              }
+            ],
+            "visible": "[equals(steps('secondStep').sptype,'manual')]"
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "adminPassword": "[basics('authType').password]",
+      "adminSSHPublicKey": "[basics('authType').sshPublicKey]",
+      "adminUserName": "[basics('userName')]",
+      "authenticationType": "[basics('authType').authenticationType]",
+      "publicIPName": "[steps('firstStep').publicIP.name]",
+      "publicIPNewOrExisting": "[steps('firstStep').publicIP.newOrExistingOrNone]",
+      "publicIPResourceGroup": "[steps('firstStep').publicIP.resourceGroup]",
+      "storageAccountType": "[steps('firstStep').vmDiskType]",
+      "vmName": "[basics('vmName')]",
+      "vmSize": "[steps('firstStep').vmSize]",
+      "location": "[location()]",
+      "ansibleVersion": "[steps('firstStep').ansibleVersion]",
+      "vnetName": "[steps('firstStep').vnet.name]",
+      "vnetResourceGroup": "[steps('firstStep').vnet.resourceGroup]",
+      "vnetAddressPrefix": "[steps('firstStep').vnet.addressPrefix]",
+      "vnetNewOrExisting": "[steps('firstStep').vnet.newOrExisting]",
+      "subnetName": "[steps('firstStep').vnet.subnets.subnet1.name]",
+      "subnetAddressPrefix": "[steps('firstStep').vnet.subnets.subnet1.addressPrefix]",
+      "spType": "[steps('secondStep').sptype]",
+      "spId": "[steps('secondStep').spSection.spid]",
+      "spSecret": "[steps('secondStep').spSection.spsecret]"
+    }
+  }
+}
