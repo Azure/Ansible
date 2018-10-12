@@ -259,7 +259,7 @@
       "type": "Microsoft.Network/networkSecurityGroups"
     },
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2018-08-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
         "[resourceId('Microsoft.Resources/deployments', variables('vnetDeploymentName'))]"
@@ -289,7 +289,7 @@
       "type": "Microsoft.Network/networkInterfaces"
     },
     {
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2018-08-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
         "[resourceId('Microsoft.Resources/deployments', variables('vnetDeploymentName'))]",
@@ -323,7 +323,7 @@
       "type": "Microsoft.Network/networkInterfaces"
     },
     {
-      "apiVersion": "2016-09-01",
+      "apiVersion": "2017-05-10",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
       ],
@@ -381,7 +381,7 @@
      }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2018-06-01",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(parameters('vmName'), '/ManagedIdentityExtensionForLinux')]",
       "location": "[parameters('location')]",
@@ -393,11 +393,13 @@
         "type": "ManagedIdentityExtensionForLinux",
         "typeHandlerVersion": "1.0",
         "autoUpgradeMinorVersion": true,
-        "settings": {}
+        "settings": {
+          "port": 50342
+        }
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2017-03-30",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', variables('vmDeploymentName'))]"
       ],
@@ -423,11 +425,11 @@
   "outputs": {
     "ansibleHostIP": {
       "type": "string",
-      "value": "[if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2016-03-30').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').ipAddress)]"
+      "value": "[if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').ipAddress)]"
     },
     "ssh": {
       "type": "string",
-      "value": "[concat('ssh ', parameters('adminUsername'), '@', if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2016-03-30').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').ipAddress))]"
+      "value": "[concat('ssh ', parameters('adminUsername'), '@', if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').ipAddress))]"
     }
   }
 }

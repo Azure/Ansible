@@ -114,5 +114,8 @@ run_command sudo pip install ansible[azure]${version_option}
 set_azure_credentials
 
 # install common tools
+echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
+wget -q -O - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+sudo apt-get install apt-transport-https
+sudo apt-get update --yes
 sudo apt-get install -y azure-cli
-
