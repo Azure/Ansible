@@ -1,12 +1,12 @@
 # Ansible Solution Template
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://ms.portal.azure.com/#create/visualstudiochina.ansible)
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://ms.portal.azure.com/#create/azure-oss.ansible)
 
-This repository contains scripts to deploy [Ansible](https://www.ansible.com/) on Linux (Ubuntu 16.04 LTS) Virtual Machine on Azure, with Azure credential pre-configured for you per configuration.
+This repository contains scripts to deploy [Ansible](https://www.ansible.com/) on Linux (Ubuntu 16.04 LTS) Virtual Machine on Azure, with Azure credential pre-configured.
 
 
 ## Customization
 - Ansible Version  
-  Pick up Ansible version to be installed. Available options: latest, 2.7.0, 2.6.5, 2.5.10.
+  Pick up Ansible version to be installed. Available options: latest, 2.7.0, 2.6.5.
 
 - Azure Credential  
   Set Azure credentials from:

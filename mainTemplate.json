@@ -160,7 +160,7 @@
         "description": "Ansible version"
       },
       "type": "string",
-      "defaultValue": "2.7.0"
+      "defaultValue": "latest"
     }
   },
   "variables": {

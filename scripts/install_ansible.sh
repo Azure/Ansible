@@ -113,3 +113,6 @@ run_command sudo pip install ansible[azure]${version_option}
 # set azure credentials
 set_azure_credentials
 
+# install common tools
+sudo apt-get install -y azure-cli
+
