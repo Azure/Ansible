@@ -164,9 +164,10 @@
     }
   },
   "variables": {
+    "dnsPrefix": "[concat('dns',uniquestring('ansible-test1'))]",
     "_extensionScript": "install_ansible.sh",
     "nsgName": "[concat(parameters('vmName'), '-nsg')]",
-    "nicName": "[concat(parameters('vmName'), '-nic-', if(equals(indexOf(parameters('publicIPNewOrExisting'), 'none'), -1), 'one', 'none'), '-pip')]",
+    "nicName": "[concat(parameters('vmName'), '-nic-', if(equals(parameters('publicIPNewOrExisting'), 'none'), 'none', 'one'), '-pip')]",
     "templateUrlIP": "[concat(parameters('artifactsLocation'),'/publicIP-',parameters('publicIPNewOrExisting'),'.json',parameters('artifactsLocationSasToken'))]",
     "templateUrlVnet": "[concat(parameters('artifactsLocation'),'/vnet-',parameters('vnetNewOrExisting'),'.json',parameters('artifactsLocationSasToken'))]",
     "templateUrlVM": "[concat(parameters('artifactsLocation'),'/VM-',parameters('authenticationType'),'.json',parameters('artifactsLocationSasToken'))]",
@@ -177,29 +178,17 @@
   },
   "resources": [
     {
-      "apiVersion": "2017-05-10",
-      "dependsOn": [],
+      "apiVersion": "2018-08-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[parameters('publicIPName')]",
+      "location": "[parameters('location')]",
       "condition": "[equals(indexOf(parameters('publicIPNewOrExisting'), 'none'), -1)]",
-      "name": "[variables('publicIPDeploymentName')]",
       "properties": {
-        "mode": "Incremental",
-        "parameters": {
-          "publicIPName": {
-            "value": "[parameters('publicIPName')]"
-          },
-          "publicIPLocation": {
-            "value": "[parameters('location')]"
-          },
-          "publicIPResourceGroup": {
-            "value": "[parameters('publicIPResourceGroup')]"
-          }
-        },
-        "templateLink": {
-          "contentVersion": "1.0.0.0",
-          "uri": "[variables('templateUrlIP')]"
+        "publicIPAllocationMethod": "Dynamic",
+        "dnsSettings": {
+          "domainNameLabel": "[variables('dnsPrefix')]"
         }
-      },
-      "type": "Microsoft.Resources/deployments"
+      }
     },
     {
       "apiVersion": "2017-05-10",
@@ -293,7 +282,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
         "[resourceId('Microsoft.Resources/deployments', variables('vnetDeploymentName'))]",
-        "[resourceId('Microsoft.Resources/deployments', variables('publicIPDeploymentName'))]"
+        "[resourceId('Microsoft.Network/publicIPAddresses/', parameters('publicIPName'))]"
       ],
       "location": "[parameters('location')]",
       "name": "[concat(parameters('vmName'), '-nic-one-pip')]",
@@ -325,7 +314,8 @@
     {
       "apiVersion": "2017-05-10",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
+        "[if(equals(parameters('publicIPNewOrExisting'), 'none'), resourceId('Microsoft.Network/networkInterfaces', variables('nicName')), resourceId('Microsoft.Network/publicIPAddresses/', parameters('publicIPName')))]"
       ],
       "name": "[variables('vmDeploymentName')]",
       "properties": {
@@ -425,11 +415,11 @@
   "outputs": {
     "ansibleHostIP": {
       "type": "string",
-      "value": "[if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').ipAddress)]"
+      "value": "[if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').dnsSettings.fqdn)]"
     },
     "ssh": {
       "type": "string",
-      "value": "[concat('ssh ', parameters('adminUsername'), '@', if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').ipAddress))]"
+      "value": "[concat('ssh ', parameters('adminUsername'), '@', if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').dnsSettings.fqdn))]"
     }
   }
 }
