@@ -164,7 +164,7 @@
     }
   },
   "variables": {
-    "dnsPrefix": "[concat('dns',uniquestring('ansible-test1'))]",
+    "dnsPrefix": "[concat('dns',uniquestring(resourceGroup().id))]",
     "_extensionScript": "install_ansible.sh",
     "nsgName": "[concat(parameters('vmName'), '-nsg')]",
     "nicName": "[concat(parameters('vmName'), '-nic-', if(equals(parameters('publicIPNewOrExisting'), 'none'), 'none', 'one'), '-pip')]",
