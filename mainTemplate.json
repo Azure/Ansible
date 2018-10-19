@@ -48,14 +48,14 @@
         "description": "Azure location where to deploy the resources"
       },
       "type": "string",
-      "defaultValue": "resourceGroup().location"
+      "defaultValue": "[resourceGroup().location]"
     },
     "publicIPName": {
       "metadata": {
         "description": "Public IP name"
       },
       "type": "string",
-      "defaultValue": "resourceGroup().name"
+      "defaultValue": "[resourceGroup().name]"
     },
     "publicIPNewOrExisting": {
       "metadata": {
@@ -69,7 +69,7 @@
         "description": "The Public IP Resource Group"
       },
       "type": "string",
-      "defaultValue": "resourceGroup().name"
+      "defaultValue": "[resourceGroup().name]"
     },
     "storageAccountType": {
       "defaultValue": "Standard_LRS",
@@ -125,7 +125,7 @@
         "description": "Name of resource group of the VNET"
       },
       "type": "string",
-      "defaultValue": "resourceGroup().name"
+      "defaultValue": "[resourceGroup().name]"
     },
     "vnetName": {
       "metadata": {
@@ -174,7 +174,8 @@
     "ubuntuSku": "16.04-LTS",
     "publicIPDeploymentName": "[concat(parameters('vmName'), '-pip-deploy')]",
     "vmDeploymentName": "[concat(parameters('vmName'), '-vm-deploy')]",
-    "vnetDeploymentName": "[concat(parameters('vmName'), '-vnet-deploy')]"
+    "vnetDeploymentName": "[concat(parameters('vmName'), '-vnet-deploy')]",
+    "resourceGroupName": "[resourceGroup().name]"
   },
   "resources": [
     {
@@ -415,11 +416,11 @@
   "outputs": {
     "ansibleHostIP": {
       "type": "string",
-      "value": "[if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').dnsSettings.fqdn)]"
+      "value": "[if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(variables('resourceGroupName'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').dnsSettings.fqdn)]"
     },
     "ssh": {
       "type": "string",
-      "value": "[concat('ssh ', parameters('adminUsername'), '@', if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(parameters('resourceGroup'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').dnsSettings.fqdn))]"
+      "value": "[concat('ssh ', parameters('adminUsername'), '@', if(equals(parameters('publicIPNewOrExisting'), 'none'), reference(resourceId(variables('resourceGroupName'),'Microsoft.Network/networkInterfaces',variables('nicName')),'2018-08-01').ipConfigurations[0].properties.privateIPAddress, reference(resourceId(parameters('publicIPResourceGroup'),'Microsoft.Network/publicIPAddresses',parameters('publicIPName')),'2018-08-01').dnsSettings.fqdn))]"
     }
   }
 }
