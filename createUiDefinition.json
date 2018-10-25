@@ -248,12 +248,7 @@
       "vmSize": "[steps('firstStep').vmSize]",
       "location": "[location()]",
       "ansibleVersion": "[steps('firstStep').ansibleVersion]",
-      "vnetName": "[steps('firstStep').vnet.name]",
-      "vnetResourceGroup": "[steps('firstStep').vnet.resourceGroup]",
-      "vnetAddressPrefix": "[steps('firstStep').vnet.addressPrefix]",
-      "vnetNewOrExisting": "[steps('firstStep').vnet.newOrExisting]",
-      "subnetName": "[steps('firstStep').vnet.subnets.subnet1.name]",
-      "subnetAddressPrefix": "[steps('firstStep').vnet.subnets.subnet1.addressPrefix]",
+      "osType": "[steps('firstStep').osType]",
       "spType": "[steps('secondStep').sptype]",
       "spId": "[steps('secondStep').spSection.spid]",
       "spSecret": "[steps('secondStep').spSection.spsecret]"
