@@ -135,7 +135,7 @@
     "nicName": "[concat(parameters('vmName'), '-nic-', if(equals(parameters('publicIPNewOrExisting'), 'none'), 'none', 'one'), '-pip')]",
     "templateUrlVM": "[concat(parameters('artifactsLocation'),'/VM-',parameters('authenticationType'),'.json',parameters('artifactsLocationSasToken'))]",
     "publicIPDeploymentName": "[concat(parameters('vmName'), '-pip-deploy')]",
-    "vmDeploymentName": "[concat(parameters('vmName'), '-vm-deploy')]",
+    "vmDeploymentName": "[concat(parameters('vmName'), '-vmdeploy-', if(equals(parameters('publicIPNewOrExisting'), 'none'), 'priv', 'pub'))]",
     "resourceGroupName": "[resourceGroup().name]",
     "vnetName": "[concat(parameters('vmName'), '-vnet')]",
     "vnetAddressPrefix": "172.10.0.0/16",
@@ -150,7 +150,20 @@
   },
   "resources": [
     {
-      "apiVersion": "2018-08-01",
+      "apiVersion": "2018-02-01",
+      "name": "pid-d9fe30ba-75f9-5ed8-9916-fd3ef72171ed",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": []
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-11-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[parameters('publicIPName')]",
       "location": "[parameters('location')]",
@@ -184,7 +197,7 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
+      "apiVersion": "2017-11-01",
       "location": "[parameters('location')]",
       "name": "[variables('nsgName')]",
       "properties": {
@@ -211,7 +224,7 @@
       "type": "Microsoft.Network/networkSecurityGroups"
     },
     {
-      "apiVersion": "2018-08-01",
+      "apiVersion": "2017-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
@@ -241,7 +254,7 @@
       "type": "Microsoft.Network/networkInterfaces"
     },
     {
-      "apiVersion": "2018-08-01",
+      "apiVersion": "2017-11-01",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
         "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]",
@@ -278,9 +291,61 @@
       "apiVersion": "2017-05-10",
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]",
-        "[if(equals(parameters('publicIPNewOrExisting'), 'none'), resourceId('Microsoft.Network/networkInterfaces', variables('nicName')), resourceId('Microsoft.Network/publicIPAddresses/', parameters('publicIPName')))]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPName'))]"
       ],
-      "name": "[variables('vmDeploymentName')]",
+      "condition": "[equals(indexOf(parameters('publicIPNewOrExisting'), 'none'), -1)]",
+      "name": "[concat(parameters('vmName'), '-vmdeploy-pub')]",
+      "properties": {
+        "mode": "Incremental",
+        "parameters": {
+          "adminPassword": {
+            "value": "[parameters('adminPassword')]"
+          },
+          "adminSSHPublicKey": {
+            "value": "[parameters('adminSSHPublicKey')]"
+          },
+          "adminUserName": {
+            "value": "[parameters('adminUserName')]"
+          },
+          "networkInterfaceId": {
+            "value": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+          },
+          "storageAccountType": {
+            "value": "[parameters('storageAccountType')]"
+          },
+          "sku": {
+            "value": "[if(equals(parameters('osType'), 'Ubuntu'), variables('ubuntuSku'), variables('centOSSku'))]"
+          },
+          "publisher": {
+            "value": "[if(equals(parameters('osType'), 'Ubuntu'), variables('ubuntuPublisher'), variables('centOSPublisher'))]"
+          },
+          "offer": {
+            "value": "[if(equals(parameters('osType'), 'Ubuntu'), variables('ubuntuOffer'), variables('centOSOffer'))]"
+          },
+          "vmLocation": {
+            "value": "[parameters('location')]"
+          },
+          "vmName": {
+            "value": "[parameters('vmName')]"
+          },
+          "vmSize": {
+            "value": "[parameters('vmSize')]"
+          }
+        },
+        "templateLink": {
+          "contentVersion": "1.0.0.0",
+          "uri": "[variables('templateUrlVM')]"
+        }
+      },
+      "type": "Microsoft.Resources/deployments"
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+      ],
+      "condition": "[equals(parameters('publicIPNewOrExisting'), 'none')]",
+      "name": "[concat(parameters('vmName'), '-vmdeploy-priv')]",
       "properties": {
         "mode": "Incremental",
         "parameters": {
@@ -328,7 +393,7 @@
     {
       "name": "[guid(resourceGroup().id, deployment().name)]",
       "type": "Microsoft.Authorization/roleAssignments",
-      "apiVersion": "2017-05-01",
+      "apiVersion": "2017-09-01",
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', variables('vmDeploymentName'))]"
       ],
@@ -340,7 +405,7 @@
       }
     },
     {
-      "apiVersion": "2018-06-01",
+      "apiVersion": "2017-12-01",
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(parameters('vmName'), '/ManagedIdentityExtensionForLinux')]",
       "location": "[parameters('location')]",
@@ -354,7 +419,8 @@
         "autoUpgradeMinorVersion": true,
         "settings": {
           "port": 50342
-        }
+        },
+        "protectedSettings": {}
       }
     },
     {
@@ -376,7 +442,7 @@
           ]
         },
         "type": "CustomScript",
-        "typeHandlerVersion": "2.0"
+      "typeHandlerVersion": "2.0"
       },
       "type": "Microsoft.Compute/virtualMachines/extensions"
     }
