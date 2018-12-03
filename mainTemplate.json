@@ -59,7 +59,7 @@
     },
     "dnsPrefix": {
       "metadata": {
-        "description": "Unique DNS Name for the Public IP used to access the Jenkins Virtual Machine."
+        "description": "Unique DNS Name for the Public IP used to access the Ansible host."
       },
       "type": "string",
       "defaultValue": "[concat('ansible-dns-', uniqueString(resourceGroup().id))]"
