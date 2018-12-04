@@ -262,7 +262,7 @@
                   "regex": "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$",
                   "validationMessage": "Must be a valid UUID."
                 },
-                "visible": true
+                "visible": "[equals(steps('secondStep').sptype,'manual')]"
               },
               {
                 "name": "spsecret",
@@ -275,7 +275,7 @@
                 "options": {
                   "hideConfirmation": true
                 },
-                "visible": true
+                "visible": "[equals(steps('secondStep').sptype,'manual')]"
               }
             ],
             "visible": "[equals(steps('secondStep').sptype,'manual')]"
@@ -292,6 +292,8 @@
       "dnsPrefix": "[steps('firstStep').publicIP.domainNameLabel]",
       "publicIPNewOrExisting": "[steps('firstStep').publicIP.newOrExistingOrNone]",
       "publicIPResourceGroup": "[steps('firstStep').publicIP.resourceGroup]",
+      "publicIPSku": "[steps('firstStep').publicIP.sku]",
+      "publicIPAllocationMethod": "[steps('firstStep').publicIP.publicIPAllocationMethod]",
       "storageAccountType": "[steps('firstStep').vmDiskType]",
       "vmName": "[basics('vmName')]",
       "vmSize": "[steps('firstStep').vmSize]",
