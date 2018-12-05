@@ -185,7 +185,7 @@
             "name": "publicIP",
             "type": "Microsoft.Network.PublicIpAddressCombo",
             "label": {
-              "publicIpAddress": "Public IP Sddress",
+              "publicIpAddress": "Public IP address",
               "domainNameLabel": "Domain name label"
             },
             "defaultValue": {
