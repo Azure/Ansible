@@ -57,6 +57,20 @@
       "type": "string",
       "defaultValue": "ansible-pip"
     },
+    "publicIPSku": {
+      "metadata": {
+        "description": "Public IP sku"
+      },
+      "type": "string",
+      "defaultValue": "Basic"
+    },
+    "publicIPAllocationMethod": {
+      "metadata": {
+        "description": "Public IP allocation method"
+      },
+      "type": "string",
+      "defaultValue": "Dynamic"
+    },
     "dnsPrefix": {
       "metadata": {
         "description": "Unique DNS Name for the Public IP used to access the Ansible host."
@@ -185,8 +199,11 @@
       "name": "[parameters('publicIPName')]",
       "location": "[parameters('location')]",
       "condition": "[equals(indexOf(parameters('publicIPNewOrExisting'), 'none'), -1)]",
+      "sku": {
+        "name": "[parameters('publicIPSku')]"
+      },
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "[parameters('publicIPAllocationMethod')]",
         "dnsSettings": {
           "domainNameLabel": "[parameters('dnsPrefix')]"
         }
@@ -313,25 +330,6 @@
             }
           ]
         }
-      }
-    },
-    {
-      "apiVersion": "2017-12-01",
-      "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(parameters('vmName'), '/ManagedIdentityExtensionForLinux')]",
-      "location": "[parameters('location')]",
-      "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
-      ],
-      "properties": {
-        "publisher": "Microsoft.ManagedIdentity",
-        "type": "ManagedIdentityExtensionForLinux",
-        "typeHandlerVersion": "1.0",
-        "autoUpgradeMinorVersion": true,
-        "settings": {
-          "port": 50342
-        },
-        "protectedSettings": {}
       }
     },
     {
