@@ -6,7 +6,7 @@ This repository contains scripts to deploy [Ansible](https://www.ansible.com/) o
 
 ## Customization
 - Ansible Version  
-  Choose an Ansible version later than 2.5.0 to be installed. You can get available release information from [here](https://github.com/ansible/ansible/releases), such as 2.7.4. And it is ok to fill in "latest". 
+  Fill in Ansible version(later than 2.5.0) to be installed, such as `2.7.4` or `latest`. Default is `latest`. You can get available release information from [here](https://github.com/ansible/ansible/releases).
 
 - Azure Credential  
   Set Azure credentials from:
