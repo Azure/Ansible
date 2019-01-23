@@ -1,7 +1,7 @@
 # Ansible Solution Template
-[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://ms.portal.azure.com/#create/azure-oss.ansible)
+[![Deploy to Azure](http://azuredeploy.net/deploybutton.png)](https://ms.portal.azure.com/#create/azure-oss.ansibleansible)
 
-This repository contains scripts to deploy [Ansible](https://www.ansible.com/) on Linux (Ubuntu 16.04 LTS) Virtual Machine on Azure, with Azure credential pre-configured.
+This repository contains scripts to deploy [Ansible](https://www.ansible.com/) on Linux (CentOS 7.5) Virtual Machine on Azure, with Azure credential pre-configured.
 
 
 ## Customization
