@@ -140,17 +140,10 @@
       },
       "type": "string",
       "defaultValue": "latest"
-    },
-    "osType": {
-      "metadata": {
-        "description": "OS Type"
-      },
-      "type": "string",
-      "defaultValue": "Ubuntu"
     }
   },
   "variables": {
-    "_extensionScript": "[concat('install_ansible_', parameters('osType'), '.sh')]",
+    "_extensionScript": "[concat('install_ansible_CentOS.sh')]",
     "nsgName": "[concat(parameters('vmName'), '-nsg')]",
     "nicName": "[concat(parameters('vmName'), '-nic')]",
     "resourceGroupName": "[resourceGroup().name]",
@@ -158,9 +151,6 @@
     "vnetAddressPrefix": "172.10.0.0/16",
     "subnetName": "[concat(parameters('vmName'), '-subnet')]",
     "subnetAddressPrefix": "172.10.0.0/24",
-    "ubuntuSku": "16.04-LTS",
-    "ubuntuPublisher": "Canonical",
-    "ubuntuOffer": "UbuntuServer",
     "centOSSku": "7.5",
     "centOSPublisher": "OpenLogic",
     "centOSOffer": "CentOS",
@@ -311,9 +301,9 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[if(equals(parameters('osType'), 'Ubuntu'), variables('ubuntuPublisher'), variables('centOSPublisher'))]",
-            "offer": "[if(equals(parameters('osType'), 'Ubuntu'), variables('ubuntuOffer'), variables('centOSOffer'))]",
-            "sku": "[if(equals(parameters('osType'), 'Ubuntu'), variables('ubuntuSku'), variables('centOSSku'))]",
+            "publisher": "[variables('centOSPublisher')]",
+            "offer": "[variables('centOSOffer')]",
+            "sku": "[variables('centOSSku')]",
             "version": "latest"
           },
           "osDisk": {
