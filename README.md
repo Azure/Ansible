@@ -11,8 +11,8 @@ This repository contains scripts to deploy [Ansible](https://www.ansible.com/) o
 - Azure Credential  
   Set Azure credentials from:
   - Not set.
-  - Mannually setting service principal id and secret.
-  - Enabling [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) on this VM. In this case, you will need to grant appriopriate role assignment to VM's system assigned identity, via az cli, portal or arm template, please refer to [this article](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal) for more detail.
+  - Manually setting service principal id and secret.
+  - Enabling [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) on this VM. In this case, you will need to grant appropriate role assignment to VM's system assigned identity, via az cli, portal or arm template, please refer to [this article](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal) for more detail.
 
 
 
