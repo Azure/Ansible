@@ -7,7 +7,7 @@ Command
   $0
 Arguments
   --version|-v                        : Ansible version
-  --service_principal_type|-sp        : The type of service principal: MSI or manual.
+  --service_principal_type|-sp        : The type of service principal: MI or manual.
   --service_principal_id|-sid         : The service principal ID.
   --service_principal_secret|-ss      : The service principal secret.
   --subscription_id|-subid            : The subscription ID of the SP.
@@ -96,7 +96,7 @@ function set_azure_credentials {
         echo export AZURE_SECRET=${service_principal_secret} >> /etc/bash.bashrc
         echo export AZURE_TENANT=${tenant_id} >> /etc/bash.bashrc
 
-    elif [ "${service_principal_type}" == "msi" ]; then
+    elif [ "${service_principal_type}" == "mi" ]; then
         echo export ANSIBLE_AZURE_AUTH_SOURCE=msi >> /etc/profile
         echo export ANSIBLE_AZURE_AUTH_SOURCE=msi >> /etc/bash.bashrc
     fi
