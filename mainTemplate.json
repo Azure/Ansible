@@ -287,7 +287,8 @@
         "type": "SystemAssigned"
       },
       "dependsOn": [
-        "[variables('nicName')]"
+        "[variables('nicName')]",
+        "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
       ],
       "properties": {
         "hardwareProfile": {
