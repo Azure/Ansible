@@ -287,8 +287,7 @@
         "type": "SystemAssigned"
       },
       "dependsOn": [
-        "[variables('nicName')]",
-        "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+        "[variables('nicName')]"
       ],
       "properties": {
         "hardwareProfile": {
@@ -328,12 +327,12 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2017-09-01",
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
+        "[resourceId('Microsoft.Compute/virtualMachines/extensions', parameters('vmName'), 'Init')]"
       ],
       "condition": "[equals(parameters('spType'), 'msi')]",
       "properties": {
         "roleDefinitionId": "[concat(subscription().id, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-        "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', parameters('vmName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
+        "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachines', parameters('vmName')), '2017-12-01', 'Full').identity.principalId]",
         "scope": "[resourceGroup().id]"
       }
     },
