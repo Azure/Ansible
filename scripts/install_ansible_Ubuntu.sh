@@ -109,6 +109,7 @@ sudo apt-get install -y python-pip
 version_option="==${ansible_version}"
 get_ansible_install_option
 run_command sudo pip install ansible[azure]${version_option}
+ansible-galaxy collection install azure.azcollection
 
 # set azure credentials
 set_azure_credentials
