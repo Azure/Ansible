@@ -105,6 +105,9 @@ function set_azure_credentials {
 # install pip
 sudo apt-get install -y python-pip
 
+# update setuptools, setuptools 20.0.0+ is in Ansible prerequisites
+pip install --upgrade setuptools
+
 # install Ansible with specific version
 version_option="==${ansible_version}"
 get_ansible_install_option
