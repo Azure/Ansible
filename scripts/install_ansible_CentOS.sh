@@ -106,6 +106,10 @@ function set_azure_credentials {
 sudo yum install -y epel-release
 sudo yum install -y python-pip python
 
+# update setuptools, setuptools 20.0.0+ is in Ansible prerequisites
+sudo pip install --upgrade pip
+sudo pip install --upgrade setuptools
+
 # install Ansible with specific version
 version_option="==${ansible_version}"
 get_ansible_install_option
