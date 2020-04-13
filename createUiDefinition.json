@@ -211,13 +211,13 @@
             "name": "sptype",
             "type": "Microsoft.Common.DropDown",
             "label": "Azure Authentication Type",
-            "defaultValue": "Auto(MSI)",
-            "toolTip": "This will add credential for authenticating with Azure in Ansible. 'Auto' means that the service principal will be created by MSI (Managed Service Identity). 'Manual' means that the service principal should be created by user and be filled in below.",
+            "defaultValue": "Auto(Managed Identities)",
+            "toolTip": "This will add credential for authenticating with Azure in Ansible. 'Auto' means that the service principal will be created by Managed Identities for VMs. 'Manual' means that the service principal should be created by user and be filled in below.",
             "constraints": {
               "allowedValues": [
                 {
-                  "label": "Auto(MSI)",
-                  "value": "msi"
+                  "label": "Auto(Managed Identities)",
+                  "value": "mi"
                 },
                 {
                   "label": "Manual",
